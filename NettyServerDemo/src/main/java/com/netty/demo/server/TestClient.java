@@ -1,10 +1,6 @@
-package com.netty.demo.test1;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+package com.netty.demo.server;
 
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
