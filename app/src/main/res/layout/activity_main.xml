@@ -25,6 +25,15 @@
         android:textColor="#fff"
         android:background="#123"/>
     <TextView
+        android:id="@+id/tv_disconnect"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="disconnect"
+        android:layout_margin="5dp"
+        android:textColor="#fff"
+        android:background="#123"/>
+    <TextView
         android:id="@+id/tv_send"
         android:layout_width="match_parent"
         android:layout_height="48dp"

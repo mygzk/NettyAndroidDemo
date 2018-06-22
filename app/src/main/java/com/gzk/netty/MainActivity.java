@@ -2,13 +2,15 @@ package com.gzk.netty;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
 import com.gzk.netty.netty.NettyClient;
+import com.gzk.netty.netty.NettyConnectListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
+    String TAG = MainActivity.class.getSimpleName();
     private EditText etContent;
 
     @Override
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         etContent = findViewById(R.id.et_content);
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
+        findViewById(R.id.tv_disconnect).setOnClickListener(this);
     }
 
     @Override
@@ -32,6 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tv_connect:
                 connect();
                 break;
+            case R.id.tv_disconnect:
+                NettyClient.getInstance().disconnect();
+                break;
             default:
                 break;
         }
@@ -39,7 +45,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void connect() {
-        NettyClient.getInstance().connect();
+        NettyClient.getInstance().connect(new NettyConnectListener() {
+            @Override
+            public void connectFail() {
+                Log.e(TAG, "connectFail...");
+            }
+
+            @Override
+            public void connectSucc() {
+                Log.e(TAG, "connectSucc...");
+            }
+
+            @Override
+            public void disconnect() {
+                Log.e(TAG, "disconnect...");
+            }
+        });
     }
 
     private void send() {

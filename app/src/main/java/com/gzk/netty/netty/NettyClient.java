@@ -1,5 +1,6 @@
 package com.gzk.netty.netty;
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.net.InetSocketAddress;
@@ -24,34 +25,61 @@ import io.netty.handler.codec.string.StringEncoder;
  */
 public class NettyClient {
     private String TAG = NettyClient.class.getSimpleName();
+    /**
+     * 重连间隔时间
+     */
+    private long reconnectIntervalTime = 5000;
+    /**
+     * 连接状态
+     */
+    private volatile boolean isConnect = false;
+    /**
+     * 是否需要重连
+     */
+    private boolean isNeedReconnect = true;
+    /**
+     * 重连次数
+     */
+    private static int reconnectNum = Integer.MAX_VALUE;
+
     private EventLoopGroup mEventLoopGroup;
     private Bootstrap mBootstrap;
     private ChannelFuture mChannelFuture;
     private Channel mChannel;
+    private Thread mClientThread;
+
+    private NettyConnectListener mNettyConnectListener;
 
 
-    public static class NettyClientHint {
+    private static class NettyClientHint {
         private static final NettyClient INSTANCE = new NettyClient();
     }
 
     private NettyClient() {
-
     }
 
-    public static final NettyClient getInstance() {
+    public static NettyClient getInstance() {
         return NettyClientHint.INSTANCE;
     }
 
-    public void connect() {
-        new Thread(new Runnable() {
+    public void connect(NettyConnectListener listener) {
+        if (isConnect) {
+            return;
+        }
+        mNettyConnectListener = listener;
+        mClientThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT));
+                connectServer();
             }
-        }).start();
+        });
+        mClientThread.start();
     }
 
-    public void connect(InetSocketAddress socketAddress) {
+    /**
+     * 连接到netty服务器
+     */
+    private void connectServer() {
         try {
             mEventLoopGroup = new NioEventLoopGroup();
             mBootstrap = new Bootstrap();
@@ -70,28 +98,71 @@ public class NettyClient {
                         }
                     });
 
-            mChannelFuture = mBootstrap.connect(socketAddress).sync(); // 发起异步连接操作
+            mChannelFuture = mBootstrap
+                    .connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT)).sync(); // 发起异步连接操作
             mChannel = mChannelFuture.channel();
             mChannelFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    Log.e(TAG, "android client 连接成功");
                     if (channelFuture.isSuccess()) {
+                        isConnect = true;
                         mChannel = channelFuture.channel();
+                        if(mNettyConnectListener!=null){
+                            mNettyConnectListener.connectSucc();
+                        }
+
+                    } else {
+                        if(mNettyConnectListener!=null){
+                            mNettyConnectListener.connectFail();
+                        }
+                        isConnect = false;
+
                     }
 
                 }
             });
             mChannel.closeFuture().sync();
         } catch (InterruptedException e) {
+            if(mNettyConnectListener!=null){
+                mNettyConnectListener.connectFail();
+            }
+            isConnect = false;
             e.printStackTrace();
         } finally {
+            isConnect = false;
+            if(mNettyConnectListener!=null){
+                mNettyConnectListener.disconnect();
+            }
             mEventLoopGroup.shutdownGracefully();
         }
 
 
     }
 
+    public void disconnect() {
+        if (mClientThread != null) {
+            mClientThread.interrupt();
+            mClientThread = null;
+        }
+        if(mNettyConnectListener!=null){
+            mNettyConnectListener.disconnect();
+        }
+        isConnect = false;
+        isNeedReconnect = false;
+        mEventLoopGroup.shutdownGracefully();
+    }
+
+    public void reconnect() {
+        Log.e(TAG, "reconnect");
+        if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
+            reconnectNum--;
+            SystemClock.sleep(reconnectIntervalTime);
+            if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
+                disconnect();
+                connectServer();
+            }
+        }
+    }
 
     public void send(String msg) {
         if (mChannel == null) {
