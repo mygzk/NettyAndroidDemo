@@ -1,9 +1,0 @@
-apply plugin: 'java-library'
-
-dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation files('libs/netty-all-4.1.25.Final.jar')
-}
-
-sourceCompatibility = "1.7"
-targetCompatibility = "1.7"

@@ -1,1 +1,1 @@
-include ':app', ':NettyDemo', ':NettyDemo1'
+include ':app', ':NettyDemo'

@@ -1,16 +1,11 @@
 package com.gzk.netty;
 
-import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-import com.gzk.netty.netty.NettyConstant;
-import com.gzk.netty.netty.client.NettyClient;
-import com.gzk.netty.service.NettyServerService;
-
-import java.net.InetSocketAddress;
+import com.gzk.netty.netty.NettyClient;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -20,12 +15,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        initService();
-
+        /// initService();
 
 
         etContent = findViewById(R.id.et_content);
         findViewById(R.id.tv_send).setOnClickListener(this);
+        findViewById(R.id.tv_connect).setOnClickListener(this);
     }
 
     @Override
@@ -34,22 +29,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.tv_send:
                 send();
                 break;
+            case R.id.tv_connect:
+                connect();
+                break;
             default:
                 break;
         }
     }
 
 
-    private void initService(){
-        Intent intent = new Intent(this, NettyServerService.class);
-        startService(intent);
+    private void connect() {
+        NettyClient.getInstance().connect();
     }
-    private void send(){
-        String str= etContent.getText().toString();
+
+    private void send() {
+        String str = etContent.getText().toString();
         NettyClient.getInstance().send(str);
 
     }
-
 
 
 }

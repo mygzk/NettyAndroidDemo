@@ -1,7 +1,11 @@
 package com.netty.demo.test1;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
@@ -46,8 +50,11 @@ new TestClient().connect("127.0.0.1",8080);
                             pipeline.addLast("handler", new TestClientHandler());
                         }
                     });
-            Channel channel = bootstrap.connect(host, port).sync().channel();
-          /*  BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+            ChannelFuture f = bootstrap.connect(host, port).sync();
+            f.channel().closeFuture().sync();
+           /* Channel channel = bootstrap.connect(host, port).sync().channel();
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             while(true){
                 channel.writeAndFlush(in.readLine() + "\r\n");
             }*/
