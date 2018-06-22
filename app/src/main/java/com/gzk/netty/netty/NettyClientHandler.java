@@ -10,11 +10,11 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
 
     private String TAG = NettyClientHandler.class.getSimpleName();
 
-    @Override
+    /*@Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         Log.e(TAG,"client channelActive");
         ctx.writeAndFlush("我是客户端 android" + "\r\n");
-    }
+    }*/
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {

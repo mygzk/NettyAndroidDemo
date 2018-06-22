@@ -5,14 +5,21 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import com.gzk.netty.netty.NettyClient;
 import com.gzk.netty.netty.NettyConnectListener;
 import com.gzk.netty.netty.NettyReceiveListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = MainActivity.class.getSimpleName();
     private EditText etContent;
+    private ListView lsRecord;
+    private RecordAdapter mAdapter;
+    private List<RecordBean> mData = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
         findViewById(R.id.tv_disconnect).setOnClickListener(this);
+
+        lsRecord = findViewById(R.id.ls_record);
+        mAdapter = new RecordAdapter(this, mData);
+        lsRecord.setAdapter(mAdapter);
     }
 
     @Override
@@ -48,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         NettyClient.getInstance().connect(new NettyConnectListener() {
             @Override
             public void connectFail(String msg) {
-                Log.e(TAG, "connectFail..."+msg);
+                Log.e(TAG, "connectFail..." + msg);
             }
 
             @Override
@@ -64,11 +75,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void send() {
-        String str = etContent.getText().toString();
+        final String str = etContent.getText().toString();
         NettyClient.getInstance().send(str, new NettyReceiveListener() {
             @Override
             public void receiveSucc(String msg) {
                 Log.e(TAG, "receiveSucc: " + msg);
+                RecordBean bean = new RecordBean();
+                bean.res = "[req]:"+str;
+                bean.reply = msg;
+                mAdapter.addData(bean);
             }
 
             @Override
