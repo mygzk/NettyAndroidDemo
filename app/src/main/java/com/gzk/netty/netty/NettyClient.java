@@ -3,6 +3,7 @@ package com.gzk.netty.netty;
 import android.os.SystemClock;
 import android.util.Log;
 
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +46,6 @@ public class NettyClient {
     private static int reconnectNum = Integer.MAX_VALUE;
 
     private EventLoopGroup mEventLoopGroup;
-    private Bootstrap mBootstrap;
-    private ChannelFuture mChannelFuture;
     private Channel mChannel;
     private NettyClientHandler mNettyClientHandler;
     private Thread mClientThread;
@@ -88,9 +87,12 @@ public class NettyClient {
      * 连接到netty服务器
      */
     private void connectServer() {
+        if (mChannel != null) {
+            mChannel = null;
+        }
         try {
             mEventLoopGroup = new NioEventLoopGroup();
-            mBootstrap = new Bootstrap();
+            Bootstrap mBootstrap = new Bootstrap();
             mBootstrap.group(mEventLoopGroup)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
@@ -106,8 +108,8 @@ public class NettyClient {
                         }
                     });
 
-            mChannelFuture = mBootstrap
-                    .connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT)).sync(); // 发起异步连接操作
+            ChannelFuture mChannelFuture = mBootstrap
+                    .connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT)).sync();
             mChannel = mChannelFuture.channel();
             mChannelFuture.addListener(new ChannelFutureListener() {
                 @Override
@@ -121,7 +123,7 @@ public class NettyClient {
 
                     } else {
                         if (mNettyConnectListener != null) {
-                            mNettyConnectListener.connectFail();
+                            mNettyConnectListener.connectFail("连接失败,channelFuture is not success");
                         }
                         isConnect = false;
 
@@ -132,16 +134,23 @@ public class NettyClient {
             mChannel.closeFuture().sync();
         } catch (InterruptedException e) {
             if (mNettyConnectListener != null) {
-                mNettyConnectListener.connectFail();
+                mNettyConnectListener.connectFail(e.getMessage());
             }
             isConnect = false;
+            e.printStackTrace();
+        } catch (Exception e) {
+            if (mNettyConnectListener != null) {
+                mNettyConnectListener.connectFail(e.getMessage());
+            }
             e.printStackTrace();
         } finally {
             isConnect = false;
             if (mNettyConnectListener != null) {
                 mNettyConnectListener.disconnect();
             }
+            disconnect();
             mEventLoopGroup.shutdownGracefully();
+
         }
 
 
@@ -160,6 +169,7 @@ public class NettyClient {
         isConnect = false;
         isNeedReconnect = false;
         mEventLoopGroup.shutdownGracefully();
+
     }
 
     public void reconnect() {
@@ -202,11 +212,12 @@ public class NettyClient {
     }
 
     public void removeCurrentReceiveLisenter() {
-        if(mNettyReceiveListener!=null&&mNettyReceiveListeners.size()>0){
+        if (mNettyReceiveListener != null && mNettyReceiveListeners.size() > 0) {
             mNettyReceiveListeners.remove(mNettyReceiveListener);
         }
 
     }
+
     public void removeReceiveLisenter(NettyReceiveListener listener) {
         if (listener != null && mNettyReceiveListeners.contains(listener)) {
             mNettyReceiveListeners.remove(listener);
@@ -232,6 +243,5 @@ public class NettyClient {
             }
         }
     }
-
 
 }

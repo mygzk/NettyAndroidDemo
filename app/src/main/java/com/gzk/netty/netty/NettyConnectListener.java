@@ -1,7 +1,7 @@
 package com.gzk.netty.netty;
 
 public interface NettyConnectListener {
-    void connectFail();
+    void connectFail(String msg);
 
     void connectSucc();
 

@@ -48,8 +48,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void connect() {
         NettyClient.getInstance().connect(new NettyConnectListener() {
             @Override
-            public void connectFail() {
-                Log.e(TAG, "connectFail...");
+            public void connectFail(String msg) {
+                Log.e(TAG, "connectFail..."+msg);
             }
 
             @Override
