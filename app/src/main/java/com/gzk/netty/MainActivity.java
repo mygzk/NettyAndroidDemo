@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.gzk.netty.netty.NettyClient;
 import com.gzk.netty.netty.NettyConnectListener;
@@ -60,16 +61,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void connectFail(String msg) {
                 Log.e(TAG, "connectFail..." + msg);
+                Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void connectSucc() {
                 Log.e(TAG, "connectSucc...");
+                Toast.makeText(MainActivity.this, "connectSucc", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void disconnect() {
                 Log.e(TAG, "disconnect...");
+                Toast.makeText(MainActivity.this, "disconnect", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -79,15 +83,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         NettyClient.getInstance().send(str, new NettyReceiveListener() {
             @Override
             public void receiveSucc(String msg) {
-                Log.e(TAG, "receiveSucc: " + msg);
+                Log.e(TAG, "recGIT eiveSucc: " + msg);
                 RecordBean bean = new RecordBean();
-                bean.res = "[req]:"+str;
+                bean.res = "[req]:" + str;
                 bean.reply = msg;
                 mAdapter.addData(bean);
             }
 
             @Override
             public void receiveFail(String msg) {
+                Toast.makeText(MainActivity.this, "receiveFail :" + msg, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "receiveFail： " + msg);
             }
         });

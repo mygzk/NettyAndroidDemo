@@ -176,16 +176,7 @@ public class NettyClient {
 
         isConnect = false;
         isNeedReconnect = false;
-       /* try {
-            mChannel.closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally {
-            mEventLoopGroup.shutdownGracefully();
-        }*/
         mEventLoopGroup.shutdownGracefully();
-
-
     }
 
     public void reconnect() {
