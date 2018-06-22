@@ -123,14 +123,14 @@ public class NettyClient {
                         isConnect = true;
                         mChannel = channelFuture.channel();
                         if (mNettyConnectListener != null) {
-                         //   mNettyConnectListener.connectSucc();
-                            postMsg(null,mNettyConnectListener,null,DispterMessage.MSG_CONN_SUCC);
+                            //   mNettyConnectListener.connectSucc();
+                            postMsg(null, mNettyConnectListener, null, DispterMessage.MSG_CONN_SUCC);
                         }
 
                     } else {
                         if (mNettyConnectListener != null) {
-                         //   mNettyConnectListener.connectFail("连接失败,channelFuture is not success");
-                            postMsg("连接失败,channelFuture is not success",mNettyConnectListener,null,DispterMessage.MSG_CONN_FAIL);
+                            //   mNettyConnectListener.connectFail("连接失败,channelFuture is not success");
+                            postMsg("连接失败,channelFuture is not success", mNettyConnectListener, null, DispterMessage.MSG_CONN_FAIL);
                         }
                         isConnect = false;
 
@@ -141,22 +141,20 @@ public class NettyClient {
             mChannel.closeFuture().sync();
         } catch (InterruptedException e) {
             if (mNettyConnectListener != null) {
-              //  mNettyConnectListener.connectFail(e.getMessage());
-                postMsg(e.getMessage(),mNettyConnectListener,null,DispterMessage.MSG_CONN_FAIL);
+                //  mNettyConnectListener.connectFail(e.getMessage());
+                postMsg(e.getMessage(), mNettyConnectListener, null, DispterMessage.MSG_CONN_FAIL);
             }
             isConnect = false;
             e.printStackTrace();
         } catch (Exception e) {
             if (mNettyConnectListener != null) {
-             //   mNettyConnectListener.connectFail(e.getMessage());
-                postMsg(e.getMessage(),mNettyConnectListener,null,DispterMessage.MSG_CONN_FAIL);
+                postMsg(e.getMessage(), mNettyConnectListener, null, DispterMessage.MSG_CONN_FAIL);
             }
             e.printStackTrace();
         } finally {
             isConnect = false;
             if (mNettyConnectListener != null) {
-             //   mNettyConnectListener.disconnect();
-                postMsg(null,mNettyConnectListener,null,DispterMessage.MSG_CONN_DIS);
+                postMsg(null, mNettyConnectListener, null, DispterMessage.MSG_CONN_DIS);
             }
             disconnect();
             mEventLoopGroup.shutdownGracefully();
@@ -167,19 +165,26 @@ public class NettyClient {
     }
 
     public void disconnect() {
-        if (mClientThread != null) {
+       /* if (mClientThread != null) {
             mClientThread.interrupt();
             mClientThread = null;
-        }
+        }*/
         if (mNettyConnectListener != null) {
-          //  mNettyConnectListener.disconnect();
-            postMsg(null,mNettyConnectListener,null,DispterMessage.MSG_CONN_DIS);
+            postMsg(null, mNettyConnectListener, null, DispterMessage.MSG_CONN_DIS);
         }
         clearReceiveLisenter();
 
         isConnect = false;
         isNeedReconnect = false;
+       /* try {
+            mChannel.closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }finally {
+            mEventLoopGroup.shutdownGracefully();
+        }*/
         mEventLoopGroup.shutdownGracefully();
+
 
     }
 
@@ -190,6 +195,7 @@ public class NettyClient {
             SystemClock.sleep(reconnectIntervalTime);
             if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
                 disconnect();
+                SystemClock.sleep(reconnectIntervalTime);
                 connectServer();
             }
         }
@@ -198,19 +204,16 @@ public class NettyClient {
     public synchronized void send(String msg, NettyReceiveListener listener) {
         mNettyReceiveListener = listener;
         if (mChannel == null) {
-           // mNettyReceiveListener.receiveFail("channel is null");
-            postMsg("channel is null",null,mNettyReceiveListener,DispterMessage.MSG_RECEIVE_FAIL);
+            postMsg("channel is null", null, mNettyReceiveListener, DispterMessage.MSG_RECEIVE_FAIL);
             return;
         }
 
         if (!mChannel.isWritable()) {
-           // mNettyReceiveListener.receiveFail("channel is not Writable");
-            postMsg("channel is not Writable",null,mNettyReceiveListener,DispterMessage.MSG_RECEIVE_FAIL);
+            postMsg("channel is not Writable", null, mNettyReceiveListener, DispterMessage.MSG_RECEIVE_FAIL);
             return;
         }
         if (!mChannel.isActive()) {
-            postMsg("channel is not active!",null,mNettyReceiveListener,DispterMessage.MSG_RECEIVE_FAIL);
-           // mNettyReceiveListener.receiveFail("channel is not active!");
+            postMsg("channel is not active!", null, mNettyReceiveListener, DispterMessage.MSG_RECEIVE_FAIL);
             return;
         }
         if (mChannel != null) {
@@ -245,8 +248,7 @@ public class NettyClient {
     public void handMsg(String msg) {
         for (NettyReceiveListener listener : mNettyReceiveListeners) {
             if (listener != null) {
-               // listener.receiveSucc(msg);
-                postMsg(msg,null,listener,DispterMessage.MSG_RECEIVE_SUCC);
+                postMsg(msg, null, listener, DispterMessage.MSG_RECEIVE_SUCC);
             }
         }
     }
@@ -254,8 +256,7 @@ public class NettyClient {
     public void handErrorMsg(String msg) {
         for (NettyReceiveListener listener : mNettyReceiveListeners) {
             if (listener != null) {
-                postMsg(msg,null,listener,DispterMessage.MSG_RECEIVE_FAIL);
-              //  listener.receiveFail(msg);
+                postMsg(msg, null, listener, DispterMessage.MSG_RECEIVE_FAIL);
             }
         }
     }

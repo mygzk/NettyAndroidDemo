@@ -25,19 +25,24 @@ public class DispterMessage {
             }
             switch (replyMessage.getType()) {
                 case MSG_CONN_SUCC:
-                    replyMessage.getConnectListener().connectSucc();
+                    if (replyMessage.getConnectListener() != null)
+                        replyMessage.getConnectListener().connectSucc();
                     break;
                 case MSG_CONN_FAIL:
-                    replyMessage.getConnectListener().connectFail(replyMessage.getMsg());
+                    if (replyMessage.getConnectListener() != null)
+                        replyMessage.getConnectListener().connectFail(replyMessage.getMsg());
                     break;
                 case MSG_CONN_DIS:
-                    replyMessage.getConnectListener().disconnect();
+                    if (replyMessage.getConnectListener() != null)
+                        replyMessage.getConnectListener().disconnect();
                     break;
                 case MSG_RECEIVE_SUCC:
-                    replyMessage.getReceiveListener().receiveSucc(replyMessage.getMsg());
+                    if (replyMessage.getReceiveListener() != null)
+                        replyMessage.getReceiveListener().receiveSucc(replyMessage.getMsg());
                     break;
                 case MSG_RECEIVE_FAIL:
-                    replyMessage.getReceiveListener().receiveFail(replyMessage.getMsg());
+                    if (replyMessage.getReceiveListener() != null)
+                        replyMessage.getReceiveListener().receiveFail(replyMessage.getMsg());
                     break;
                 default:
                     break;

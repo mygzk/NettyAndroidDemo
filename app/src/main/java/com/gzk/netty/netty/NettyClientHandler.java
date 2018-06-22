@@ -2,9 +2,10 @@ package com.gzk.netty.netty;
 
 import android.util.Log;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
+@ChannelHandler.Sharable
 public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
 
 
@@ -31,7 +32,6 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Log.e(TAG,"client exceptionCaught");
         NettyClient.getInstance().handErrorMsg(cause.getMessage());
         cause.printStackTrace();
         ctx.close();
