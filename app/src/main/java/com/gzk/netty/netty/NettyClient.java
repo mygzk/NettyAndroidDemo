@@ -48,6 +48,7 @@ public class NettyClient {
     private Bootstrap mBootstrap;
     private ChannelFuture mChannelFuture;
     private Channel mChannel;
+    private NettyClientHandler mNettyClientHandler;
     private Thread mClientThread;
 
     private NettyConnectListener mNettyConnectListener;
@@ -60,6 +61,7 @@ public class NettyClient {
     }
 
     private NettyClient() {
+        mNettyClientHandler = new NettyClientHandler();
     }
 
     public static NettyClient getInstance() {
@@ -100,7 +102,7 @@ public class NettyClient {
                             pipeline.addLast("line", new LineBasedFrameDecoder(1024));
                             pipeline.addLast("decoder", new StringDecoder());
                             pipeline.addLast("encoder", new StringEncoder());
-                            pipeline.addLast("handler", new NettyClientHandler());
+                            pipeline.addLast("handler", mNettyClientHandler);
                         }
                     });
 
@@ -172,7 +174,7 @@ public class NettyClient {
         }
     }
 
-    public void send(String msg, NettyReceiveListener listener) {
+    public synchronized void send(String msg, NettyReceiveListener listener) {
         mNettyReceiveListener = listener;
         if (mChannel == null) {
             mNettyReceiveListener.receiveFail("channel is null");
@@ -199,6 +201,12 @@ public class NettyClient {
         }
     }
 
+    public void removeCurrentReceiveLisenter() {
+        if(mNettyReceiveListener!=null&&mNettyReceiveListeners.size()>0){
+            mNettyReceiveListeners.remove(mNettyReceiveListener);
+        }
+
+    }
     public void removeReceiveLisenter(NettyReceiveListener listener) {
         if (listener != null && mNettyReceiveListeners.contains(listener)) {
             mNettyReceiveListeners.remove(listener);
@@ -217,17 +225,13 @@ public class NettyClient {
         }
     }
 
-    public void handErrorMsg(String msg){
+    public void handErrorMsg(String msg) {
         for (NettyReceiveListener listener : mNettyReceiveListeners) {
             if (listener != null) {
                 listener.receiveFail(msg);
             }
         }
     }
-
-
-
-
 
 
 }

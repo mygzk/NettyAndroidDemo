@@ -12,16 +12,26 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        Log.e(TAG,"client channelActive");
         ctx.writeAndFlush("我是客户端 android" + "\r\n");
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
+        Log.e(TAG,"client channelRead0");
         NettyClient.getInstance().handMsg(s);
     }
 
     @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        Log.e(TAG,"client channelReadComplete");
+        NettyClient.getInstance().removeCurrentReceiveLisenter();
+        super.channelReadComplete(ctx);
+    }
+
+    @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        Log.e(TAG,"client exceptionCaught");
         NettyClient.getInstance().handErrorMsg(cause.getMessage());
         cause.printStackTrace();
         ctx.close();
