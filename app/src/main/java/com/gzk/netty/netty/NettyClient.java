@@ -4,6 +4,8 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -49,6 +51,8 @@ public class NettyClient {
     private Thread mClientThread;
 
     private NettyConnectListener mNettyConnectListener;
+    private List<NettyReceiveListener> mNettyReceiveListeners = new ArrayList<>();
+    private NettyReceiveListener mNettyReceiveListener;
 
 
     private static class NettyClientHint {
@@ -66,6 +70,8 @@ public class NettyClient {
         if (isConnect) {
             return;
         }
+        mNettyReceiveListeners.clear();
+
         mNettyConnectListener = listener;
         mClientThread = new Thread(new Runnable() {
             @Override
@@ -107,12 +113,12 @@ public class NettyClient {
                     if (channelFuture.isSuccess()) {
                         isConnect = true;
                         mChannel = channelFuture.channel();
-                        if(mNettyConnectListener!=null){
+                        if (mNettyConnectListener != null) {
                             mNettyConnectListener.connectSucc();
                         }
 
                     } else {
-                        if(mNettyConnectListener!=null){
+                        if (mNettyConnectListener != null) {
                             mNettyConnectListener.connectFail();
                         }
                         isConnect = false;
@@ -123,14 +129,14 @@ public class NettyClient {
             });
             mChannel.closeFuture().sync();
         } catch (InterruptedException e) {
-            if(mNettyConnectListener!=null){
+            if (mNettyConnectListener != null) {
                 mNettyConnectListener.connectFail();
             }
             isConnect = false;
             e.printStackTrace();
         } finally {
             isConnect = false;
-            if(mNettyConnectListener!=null){
+            if (mNettyConnectListener != null) {
                 mNettyConnectListener.disconnect();
             }
             mEventLoopGroup.shutdownGracefully();
@@ -144,9 +150,11 @@ public class NettyClient {
             mClientThread.interrupt();
             mClientThread = null;
         }
-        if(mNettyConnectListener!=null){
+        if (mNettyConnectListener != null) {
             mNettyConnectListener.disconnect();
         }
+        clearReceiveLisenter();
+
         isConnect = false;
         isNeedReconnect = false;
         mEventLoopGroup.shutdownGracefully();
@@ -164,24 +172,62 @@ public class NettyClient {
         }
     }
 
-    public void send(String msg) {
+    public void send(String msg, NettyReceiveListener listener) {
+        mNettyReceiveListener = listener;
         if (mChannel == null) {
-            Log.e(TAG, "send: channel is null");
+            mNettyReceiveListener.receiveFail("channel is null");
             return;
         }
 
         if (!mChannel.isWritable()) {
-            Log.e(TAG, "send: channel is not Writable");
+            mNettyReceiveListener.receiveFail("channel is not Writable");
             return;
         }
         if (!mChannel.isActive()) {
-            Log.e(TAG, "send: channel is not active!");
+            mNettyReceiveListener.receiveFail("channel is not active!");
             return;
         }
         if (mChannel != null) {
+            addReceiveLisenter(mNettyReceiveListener);
             mChannel.writeAndFlush(msg + System.getProperty(NettyConstant.MAG_SEPARATOR_1));
         }
     }
+
+    public void addReceiveLisenter(NettyReceiveListener listener) {
+        if (listener != null && !mNettyReceiveListeners.contains(listener)) {
+            mNettyReceiveListeners.add(listener);
+        }
+    }
+
+    public void removeReceiveLisenter(NettyReceiveListener listener) {
+        if (listener != null && mNettyReceiveListeners.contains(listener)) {
+            mNettyReceiveListeners.remove(listener);
+        }
+    }
+
+    public void clearReceiveLisenter() {
+        mNettyReceiveListeners.clear();
+    }
+
+    public void handMsg(String msg) {
+        for (NettyReceiveListener listener : mNettyReceiveListeners) {
+            if (listener != null) {
+                listener.receiveSucc(msg);
+            }
+        }
+    }
+
+    public void handErrorMsg(String msg){
+        for (NettyReceiveListener listener : mNettyReceiveListeners) {
+            if (listener != null) {
+                listener.receiveFail(msg);
+            }
+        }
+    }
+
+
+
+
 
 
 }

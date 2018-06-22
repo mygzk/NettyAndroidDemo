@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 import com.gzk.netty.netty.NettyClient;
 import com.gzk.netty.netty.NettyConnectListener;
+import com.gzk.netty.netty.NettyReceiveListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = MainActivity.class.getSimpleName();
@@ -65,7 +66,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void send() {
         String str = etContent.getText().toString();
-        NettyClient.getInstance().send(str);
+        NettyClient.getInstance().send(str, new NettyReceiveListener() {
+            @Override
+            public void receiveSucc(String msg) {
+                Log.e(TAG, "receiveSucc: " + msg);
+            }
+
+            @Override
+            public void receiveFail(String msg) {
+                Log.e(TAG, "receiveFail： " + msg);
+            }
+        });
 
     }
 
