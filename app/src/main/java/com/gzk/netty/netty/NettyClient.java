@@ -10,6 +10,7 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -25,6 +26,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * netty client
@@ -109,6 +111,15 @@ public class NettyClient {
                             pipeline.addLast("line", new LineBasedFrameDecoder(1024));
                             pipeline.addLast("decoder", new StringDecoder());
                             pipeline.addLast("encoder", new StringEncoder());
+                            /**
+                             *
+                             1）readerIdleTime：为读超时时间（即测试端一定时间内未接受到被测试端消息）
+
+                             2）writerIdleTime：为写超时时间（即测试端一定时间内向被测试端发送消息）
+
+                             3）allIdleTime：所有类型的超时时间
+                             */
+                            pipeline.addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
                             pipeline.addLast("handler", mNettyClientHandler);
                         }
                     });
