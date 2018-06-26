@@ -1,5 +1,6 @@
 package com.gzk.netty.netty;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -20,12 +21,16 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 /**
@@ -79,7 +84,6 @@ public class NettyClient {
             return;
         }
         mNettyReceiveListeners.clear();
-
         mNettyConnectListener = listener;
         mClientThread = new Thread(new Runnable() {
             @Override
@@ -103,22 +107,16 @@ public class NettyClient {
             mBootstrap.group(mEventLoopGroup)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
+                    // .option(ChannelOption.RCVBUF_ALLOCATOR,  new FixedRecvByteBufAllocator(65535))
+                    // .option(ChannelOption.MAX_MESSAGES_PER_READ, Integer.MAX_VALUE)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {
                             ChannelPipeline pipeline = socketChannel.pipeline();
-                            //粘包处理
-                            pipeline.addLast("line", new LineBasedFrameDecoder(1024));
+                            //粘包处理 这是字符串最大长度
+                            pipeline.addLast("line", new LineBasedFrameDecoder(2 * 1024 * 1024));
                             pipeline.addLast("decoder", new StringDecoder());
                             pipeline.addLast("encoder", new StringEncoder());
-                            /**
-                             *
-                             1）readerIdleTime：为读超时时间（即测试端一定时间内未接受到被测试端消息）
-
-                             2）writerIdleTime：为写超时时间（即测试端一定时间内向被测试端发送消息）
-
-                             3）allIdleTime：所有类型的超时时间
-                             */
                             pipeline.addLast(new IdleStateHandler(0, 4, 0, TimeUnit.SECONDS));
                             pipeline.addLast("handler", mNettyClientHandler);
                         }
@@ -164,9 +162,6 @@ public class NettyClient {
             e.printStackTrace();
         } finally {
             isConnect = false;
-            if (mNettyConnectListener != null) {
-                postMsg(null, mNettyConnectListener, null, DispterMessage.MSG_CONN_DIS);
-            }
             disconnect();
             mEventLoopGroup.shutdownGracefully();
 

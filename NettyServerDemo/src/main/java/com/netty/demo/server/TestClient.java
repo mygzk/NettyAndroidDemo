@@ -49,11 +49,6 @@ new TestClient().connect("127.0.0.1",8080);
 
             ChannelFuture f = bootstrap.connect(host, port).sync();
             f.channel().closeFuture().sync();
-           /* Channel channel = bootstrap.connect(host, port).sync().channel();
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            while(true){
-                channel.writeAndFlush(in.readLine() + "\r\n");
-            }*/
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
