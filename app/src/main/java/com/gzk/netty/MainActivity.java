@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.gzk.netty.netty.BaseResult;
 import com.gzk.netty.netty.NettyClient;
 import com.gzk.netty.netty.NettyConnectListener;
 import com.gzk.netty.netty.NettyReceiveListener;
