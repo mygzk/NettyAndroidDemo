@@ -107,8 +107,6 @@ public class NettyClient {
             mBootstrap.group(mEventLoopGroup)
                     .channel(NioSocketChannel.class)
                     .option(ChannelOption.TCP_NODELAY, true)
-                    // .option(ChannelOption.RCVBUF_ALLOCATOR,  new FixedRecvByteBufAllocator(65535))
-                    // .option(ChannelOption.MAX_MESSAGES_PER_READ, Integer.MAX_VALUE)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) {

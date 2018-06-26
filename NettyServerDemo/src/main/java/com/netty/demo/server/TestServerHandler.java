@@ -68,6 +68,9 @@ public class TestServerHandler extends SimpleChannelInboundHandler<String> {
             "58.当客户端数据量过大时，TCP协议会自动分包进行数据传输（何时分包，如何分包，每包大小尚未研究）， 使用netty做server时，netty会根据当前接收到的数据包大小（适用于当前连接），自动调整下次接收到数据包大小（TCP默认大小为1024，当数据包不超过1024时，会一次接收完毕，当超过1024时，下次自动增长为2048，然后下次增长为3072，然后下次增长为4096；然而，再往下增长，则增长了2048变为6144，然后变为8192，数据包增长到8192就已经是极限了（8KB），当客户端数据再大时，接收到的数据包也不再改变。此后，只要发送的数据包大小不超过8192，netty server一律按照一个包接收，不再分包）" +
             "59.当客户端数据量过大时，TCP协议会自动分包进行数据传输（何时分包，如何分包，每包大小尚未研究）， 使用netty做server时，netty会根据当前接收到的数据包大小（适用于当前连接），自动调整下次接收到数据包大小（TCP默认大小为1024，当数据包不超过1024时，会一次接收完毕，当超过1024时，下次自动增长为2048，然后下次增长为3072，然后下次增长为4096；然而，再往下增长，则增长了2048变为6144，然后变为8192，数据包增长到8192就已经是极限了（8KB），当客户端数据再大时，接收到的数据包也不再改变。此后，只要发送的数据包大小不超过8192，netty server一律按照一个包接收，不再分包）";
 
+    String reply1 = "{\"res\": \"test\",\"reply\": \"repley---\"}";
+    String reply = "[{\"res\": \"test\",\"reply\": \"replay你好0\"},{\"res\": \"test2\",\"reply\": \"replay 你好\"}]";
+
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
@@ -76,8 +79,12 @@ public class TestServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
         System.out.println("server receive msg:" + s);
-
-        channelHandlerContext.writeAndFlush("[reply]:" + TEST_LARGE_MSG + System.getProperty(TAG_LINE));
+       /* if(s!=null&&s.startsWith("list")){
+            channelHandlerContext.writeAndFlush(reply + System.getProperty(TAG_LINE));
+        }else {
+            channelHandlerContext.writeAndFlush(reply1 + System.getProperty(TAG_LINE));
+        }*/
+        channelHandlerContext.writeAndFlush(reply + System.getProperty(TAG_LINE));
 
     }
 
@@ -99,6 +106,7 @@ public class TestServerHandler extends SimpleChannelInboundHandler<String> {
      * 空闲次数
      */
     private int idle_count = 1;
+
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
@@ -111,9 +119,9 @@ public class TestServerHandler extends SimpleChannelInboundHandler<String> {
                     ctx.channel().close();
                 }
                 idle_count++;
-            }else if(IdleState.WRITER_IDLE.equals(event.state())){
+            } else if (IdleState.WRITER_IDLE.equals(event.state())) {
                 System.out.println("  IdleState  WRITER_IDLE");
-            }else {
+            } else {
                 System.out.println("  IdleState  ALL_IDLE");
             }
         } else {

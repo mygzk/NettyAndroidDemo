@@ -6,6 +6,7 @@ tasks.withType(JavaCompile) {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation files('libs/netty-all-4.1.25.Final.jar')
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 sourceCompatibility = "1.7"

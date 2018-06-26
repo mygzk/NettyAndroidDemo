@@ -22,6 +22,10 @@ public class RecordAdapter extends BaseAdapter {
         mDatas.add(bean);
         notifyDataSetChanged();
     }
+    public void addData(List<RecordBean> bean){
+        mDatas.addAll(bean);
+        notifyDataSetChanged();
+    }
 
     @Override
     public int getCount() {

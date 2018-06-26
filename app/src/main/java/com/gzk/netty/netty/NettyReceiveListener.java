@@ -1,8 +1,9 @@
 package com.gzk.netty.netty;
 
-public interface NettyReceiveListener {
+public interface NettyReceiveListener<T> {
 
-    void receiveSucc(String msg);
     void receiveFail(String msg);
+
+    void receiveSucc(T t);
 
 }

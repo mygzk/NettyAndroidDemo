@@ -3,6 +3,12 @@ package com.gzk.netty.netty;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.util.Log;
+
+import com.gzk.netty.GsonUtil;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 
 public class DispterMessage {
@@ -37,8 +43,11 @@ public class DispterMessage {
                         replyMessage.getConnectListener().disconnect();
                     break;
                 case MSG_RECEIVE_SUCC:
-                    if (replyMessage.getReceiveListener() != null)
-                        replyMessage.getReceiveListener().receiveSucc(replyMessage.getMsg());
+                    if (replyMessage.getReceiveListener() != null) {
+                        Type type = getSuperclassTypeParameter(replyMessage.getReceiveListener().getClass());
+                        replyMessage.getReceiveListener().receiveSucc(GsonUtil.fromJson(replyMessage.getMsg(), type));
+                    }
+
                     break;
                 case MSG_RECEIVE_FAIL:
                     if (replyMessage.getReceiveListener() != null)
@@ -56,6 +65,12 @@ public class DispterMessage {
         message.obj = replyMessage;
         mHandler.sendMessage(message);
 
+    }
+
+    private static Type getSuperclassTypeParameter(Class<?> subclass) {
+        ParameterizedType parameterizedType = (ParameterizedType) subclass.getGenericInterfaces()[0];
+        Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        return actualTypeArguments[0];
     }
 
 

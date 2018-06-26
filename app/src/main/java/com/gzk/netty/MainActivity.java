@@ -80,20 +80,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void send() {
         final String str = etContent.getText().toString();
-        NettyClient.getInstance().send(str, new NettyReceiveListener() {
-            @Override
-            public void receiveSucc(String msg) {
-                Log.e(TAG, "recGIT eiveSucc: " + msg);
-                RecordBean bean = new RecordBean();
-                bean.res = "[req]:" + str;
-                bean.reply = msg;
-                mAdapter.addData(bean);
-            }
+        NettyClient.getInstance().send(str, new NettyReceiveListener<List<RecordBean>>() {
 
             @Override
             public void receiveFail(String msg) {
                 Toast.makeText(MainActivity.this, "receiveFail :" + msg, Toast.LENGTH_SHORT).show();
                 Log.e(TAG, "receiveFail： " + msg);
+            }
+
+            @Override
+            public void receiveSucc(List<RecordBean> s) {
+                Log.e(TAG, "receiveSucc1： " );
+                mAdapter.addData(s);
             }
         });
 
