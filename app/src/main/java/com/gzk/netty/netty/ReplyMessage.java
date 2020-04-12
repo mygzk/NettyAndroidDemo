@@ -1,5 +1,7 @@
 package com.gzk.netty.netty;
 
+import com.gzk.netty.netty.client.NettyReceiveListener;
+
 public class ReplyMessage {
     private String msg;
     private int type;

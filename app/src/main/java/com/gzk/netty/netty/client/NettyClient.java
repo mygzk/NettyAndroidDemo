@@ -1,13 +1,13 @@
-package com.gzk.netty.netty;
+package com.gzk.netty.netty.client;
 
-import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
 
-import java.net.ConnectException;
+import com.gzk.netty.netty.DispterMessage;
+import com.gzk.netty.netty.NettyConnectListener;
+import com.gzk.netty.netty.utils.NettyConstant;
+import com.gzk.netty.netty.ReplyMessage;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,16 +21,12 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.FixedRecvByteBufAllocator;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 
 /**
@@ -120,8 +116,7 @@ public class NettyClient {
                         }
                     });
 
-            ChannelFuture mChannelFuture = mBootstrap
-                    .connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT)).sync();
+            ChannelFuture mChannelFuture = mBootstrap.connect(new InetSocketAddress(NettyConstant.HOST, NettyConstant.PORT)).sync();
             mChannel = mChannelFuture.channel();
             mChannelFuture.addListener(new ChannelFutureListener() {
                 @Override
@@ -169,10 +164,6 @@ public class NettyClient {
     }
 
     public void disconnect() {
-       /* if (mClientThread != null) {
-            mClientThread.interrupt();
-            mClientThread = null;
-        }*/
         if (mNettyConnectListener != null) {
             postMsg(null, mNettyConnectListener, null, DispterMessage.MSG_CONN_DIS);
         }

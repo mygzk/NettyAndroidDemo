@@ -15,20 +15,20 @@ import io.netty.handler.codec.string.StringEncoder;
 
 public class TestClient {
 
-    public static void main(String[] agrs){
+    public static void main(String[] agrs) {
 
-new TestClient().connect("127.0.0.1",8080);
+        new TestClient().connect("127.0.0.1", 8080);
     }
 
 
-    private void connect(String host,int port){
+    private void connect(String host, int port) {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            Bootstrap bootstrap  = new Bootstrap()
+            Bootstrap bootstrap = new Bootstrap()
                     .group(group)
                     .channel(NioSocketChannel.class)
-                    .option(ChannelOption.TCP_NODELAY,true)
-                    .handler(new ChannelInitializer<SocketChannel>(){
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .handler(new ChannelInitializer<SocketChannel>() {
 
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
