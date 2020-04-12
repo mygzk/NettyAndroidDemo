@@ -6,12 +6,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.gzk.netty.netty.BaseResult;
-import com.gzk.netty.netty.NettyClient;
+import com.gzk.netty.netty.utils.IPInformation;
+import com.gzk.netty.netty.client.NettyClient;
 import com.gzk.netty.netty.NettyConnectListener;
-import com.gzk.netty.netty.NettyReceiveListener;
+import com.gzk.netty.netty.client.NettyReceiveListener;
+import com.gzk.netty.netty.server.NettyServer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,25 +30,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         etContent = findViewById(R.id.et_content);
+
+        findViewById(R.id.tv_start_server).setOnClickListener(this);
         findViewById(R.id.tv_send).setOnClickListener(this);
         findViewById(R.id.tv_connect).setOnClickListener(this);
         findViewById(R.id.tv_disconnect).setOnClickListener(this);
+        TextView address = findViewById(R.id.ip_address);
+        address.setText("ip="+getSelfIpAddress());
 
         lsRecord = findViewById(R.id.ls_record);
         mAdapter = new RecordAdapter(this, mData);
         lsRecord.setAdapter(mAdapter);
+
+
     }
 
+    private String getSelfIpAddress(){
+        IPInformation iPInfo = new IPInformation(this);
+        return iPInfo.getWIFILocalIpAdress();
+    }
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.tv_send:
-                send();
+            case R.id.tv_start_server:
+                startServer();
                 break;
             case R.id.tv_connect:
                 connect();
+                break;
+            case R.id.tv_send:
+                send();
                 break;
             case R.id.tv_disconnect:
                 NettyClient.getInstance().disconnect();
@@ -56,6 +70,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    private void startServer() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NettyServer.startServer();
+            }
+        }).start();
+    }
 
     private void connect() {
         NettyClient.getInstance().connect(new NettyConnectListener() {
@@ -91,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void receiveSucc(List<RecordBean> s) {
-                Log.e(TAG, "receiveSucc1： " );
+                Log.e(TAG, "receiveSucc1： ");
                 mAdapter.addData(s);
             }
         });

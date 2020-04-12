@@ -1,4 +1,4 @@
-package com.gzk.netty.netty;
+package com.gzk.netty.netty.client;
 
 public interface NettyReceiveListener<T> {
 

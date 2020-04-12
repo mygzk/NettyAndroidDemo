@@ -1,4 +1,4 @@
-package com.gzk.netty.netty;
+package com.gzk.netty.netty.client;
 
 import android.util.Log;
 
@@ -32,6 +32,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String s) throws Exception {
         Log.e(TAG, "client channelRead0");
+        System.out.println("NettyClientHandler，client receive msg:" + s);
         mReadOk = true;
         NettyClient.getInstance().handMsg(s);
 
